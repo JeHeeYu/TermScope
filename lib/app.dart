@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:termscope/controllers/side_navigation.dart';
+import 'package:termscope/providers/ssh_list_provider.dart';
 import 'package:termscope/views/pages/edit_page.dart';
 import 'package:termscope/views/pages/ssh_list_page.dart';
 import 'package:termscope/views/top_menu_list.dart';
