@@ -7,12 +7,12 @@ class ButtonIcon extends StatelessWidget {
   final VoidCallback callback;
 
   const ButtonIcon({
-    Key? key,
+    super.key,
     required this.icon,
     this.callback = _callback,
     this.iconColor = Colors.white,
     this.iconSize,
-  }) : super(key: key);
+  });
 
   static void _callback() {}
 

@@ -34,11 +34,6 @@ class SideNavigation extends StatelessWidget {
             icon: Icons.settings,
             selectedIndex: selectedIndex,
           ),
-          _buildCustomDestination(
-            index: 2,
-            icon: Icons.person,
-            selectedIndex: selectedIndex,
-          ),
         ],
       ),
     );
