@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:termscope/static/app_color.dart';
 import 'package:termscope/views/widgets/button_icon.dart';
 
 class SideNavigation extends StatelessWidget {
@@ -22,7 +23,7 @@ class SideNavigation extends StatelessWidget {
         selectedIndex: selectedIndex,
         onDestinationSelected: onDestinationSelected,
         labelType: NavigationRailLabelType.none,
-        backgroundColor: const Color.fromARGB(255, 38, 38, 38), 
+        backgroundColor: AppColor.mainBackground,
         destinations: [
           _buildCustomDestination(
             index: 0,

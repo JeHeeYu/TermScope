@@ -1,6 +1,9 @@
 import 'package:dartssh2/dartssh2.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:termscope/database/database_manager.dart';
+import 'package:termscope/datas/ssh_list_data.dart';
+import 'package:termscope/providers/ssh_list_provider.dart';
 
 class SSHConnectionDialog extends StatefulWidget {
   const SSHConnectionDialog({super.key});
@@ -52,24 +55,38 @@ class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
       final result = await client.execute('echo "Hello, SSH!"');
       print("Command Output: $result");
 
-      DatabaseManager().printDatabasePath();
-
-      await DatabaseManager().insertSSH({
+      // 데이터베이스에 저장
+      final newSSHData = {
         'hostName': hostName,
         'userName': userName,
         'password': password,
         'port': port,
-      });
+      };
+      await DatabaseManager().insertSSH(newSSHData);
 
       print("SSH connection info saved to database.");
 
-      // 연결 종료
+      final provider = Provider.of<SSHListProvider>(context, listen: false);
+      provider.addSSH(SSHListData(
+        id: DateTime.now().millisecondsSinceEpoch,
+        hostName: hostName,
+        userName: userName,
+        password: password,
+        port: port,
+      ));
+
+      Future.delayed(const Duration(milliseconds: 100), () {
+        provider.checkSSHConnections();
+      });
+
       client.close();
       await client.done;
 
       setState(() {
         _connectionStatus = "Connection closed";
       });
+
+      Navigator.pop(context);
     } catch (e) {
       setState(() {
         _connectionStatus = "Connection failed: $e";
@@ -108,7 +125,9 @@ class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
             Text(
               _connectionStatus,
               style: TextStyle(
-                color: _connectionStatus.startsWith("Connected") ? Colors.green : Colors.red,
+                color: _connectionStatus.startsWith("Connected")
+                    ? Colors.green
+                    : Colors.red,
               ),
             ),
           ],

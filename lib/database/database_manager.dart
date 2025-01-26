@@ -69,6 +69,20 @@ class DatabaseManager {
     return await _database!.query('ssh_list');
   }
 
+  Future<void> deleteSSH(int id) async {
+    if (_database == null) {
+      print('Database is not initialized');
+      return;
+    }
+
+    await _database!.delete(
+      'ssh_list',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    print('Deleted SSH entry with id: $id');
+  }
+
   Future<void> printDatabasePath() async {
     final databasePath = await getDatabasesPath();
     final fullPath = join(databasePath, 'ssh_list.db');

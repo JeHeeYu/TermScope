@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:termscope/controllers/side_navigation.dart';
-import 'package:termscope/providers/ssh_list_provider.dart';
+import 'package:termscope/static/app_color.dart';
 import 'package:termscope/views/pages/edit_page.dart';
 import 'package:termscope/views/pages/ssh_list_page.dart';
 import 'package:termscope/views/top_menu_list.dart';
@@ -34,7 +33,11 @@ class _AppState extends State<App> {
               height: menuHeight,
               child: const TopMenuList(),
             ),
-            const Divider(height: 1, thickness: 1),
+            const Divider(
+              height: 1,
+              thickness: 1,
+              color: AppColor.divider,
+            ),
             Expanded(
               child: Row(
                 children: [
@@ -46,7 +49,11 @@ class _AppState extends State<App> {
                       });
                     },
                   ),
-                  const VerticalDivider(thickness: 1, width: 1),
+                  const VerticalDivider(
+                    thickness: 1,
+                    width: 1,
+                    color: AppColor.divider,
+                  ),
                   Expanded(
                     child: _pages[_selectedIndex],
                   ),
