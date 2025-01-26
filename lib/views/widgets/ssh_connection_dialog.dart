@@ -1,5 +1,6 @@
 import 'package:dartssh2/dartssh2.dart';
 import 'package:flutter/material.dart';
+import 'package:termscope/database/database_manager.dart';
 
 class SSHConnectionDialog extends StatefulWidget {
   const SSHConnectionDialog({super.key});
@@ -51,12 +52,24 @@ class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
       final result = await client.execute('echo "Hello, SSH!"');
       print("Command Output: $result");
 
-      // client.close();
-      // await client.done;
+      DatabaseManager().printDatabasePath();
 
-      // setState(() {
-      //   _connectionStatus = "Connection closed";
-      // });
+      await DatabaseManager().insertSSH({
+        'hostName': hostName,
+        'userName': userName,
+        'password': password,
+        'port': port,
+      });
+
+      print("SSH connection info saved to database.");
+
+      // 연결 종료
+      client.close();
+      await client.done;
+
+      setState(() {
+        _connectionStatus = "Connection closed";
+      });
     } catch (e) {
       setState(() {
         _connectionStatus = "Connection failed: $e";
@@ -89,7 +102,7 @@ class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
             TextField(
               controller: _portController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Port (e.g., 20005)'),
+              decoration: const InputDecoration(labelText: 'Port (e.g., 22)'),
             ),
             const SizedBox(height: 16),
             Text(
