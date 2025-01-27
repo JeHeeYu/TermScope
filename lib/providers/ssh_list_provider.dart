@@ -3,10 +3,16 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:termscope/database/database_manager.dart';
 import 'package:termscope/datas/ssh_list_data.dart';
+import 'package:xterm/xterm.dart';
 
 class SSHListProvider extends ChangeNotifier {
   List<SSHListData> _sshList = [];
   List<SSHListData> get sshList => _sshList;
+
+  final List<Terminal> terminals = [];
+  final List<SSHClient?> clients = [];
+  final List<String> tabTitles = [];
+
   int? hoveredIndex;
 
   SSHListProvider() {
@@ -28,6 +34,21 @@ class SSHListProvider extends ChangeNotifier {
   Future<void> removeSSH(int id) async {
     await DatabaseManager().deleteSSH(id);
     _sshList.removeWhere((item) => item.id == id);
+    notifyListeners();
+  }
+
+  void addTerminal(Terminal terminal, String title, SSHClient? client) {
+    terminals.add(terminal);
+    tabTitles.add(title);
+    clients.add(client);
+    notifyListeners();
+  }
+
+  void removeTerminal(int index) {
+    terminals.removeAt(index);
+    tabTitles.removeAt(index);
+    clients[index]?.close();
+    clients.removeAt(index);
     notifyListeners();
   }
 
