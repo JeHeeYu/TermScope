@@ -9,6 +9,8 @@ import 'package:termscope/providers/ssh_list_provider.dart';
 import 'package:termscope/static/app_color.dart';
 import 'package:termscope/views/widgets/button_icon.dart';
 
+enum ViewType { listView, folderView }
+
 class SSHListPage extends StatefulWidget {
   const SSHListPage({super.key});
 
@@ -19,6 +21,7 @@ class SSHListPage extends StatefulWidget {
 class _SSHListPageState extends State<SSHListPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  ViewType _currentView = ViewType.listView;
 
   @override
   void initState() {
@@ -63,6 +66,12 @@ class _SSHListPageState extends State<SSHListPage>
 
       final shell = await client.shell();
 
+      final currentPath = await provider.getCurrentPath(client);
+      provider.updateCurrentPath(currentPath);
+
+      final folderList = await provider.getFolderList(client, currentPath);
+      provider.updateFolderList(folderList);
+
       shell.stdout.listen((data) => terminal.write(utf8.decode(data)));
       shell.stderr.listen(
           (data) => terminal.write('\x1b[31m${utf8.decode(data)}\x1b[0m'));
@@ -80,26 +89,37 @@ class _SSHListPageState extends State<SSHListPage>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final provider = Provider.of<SSHListProvider>(context);
+  void _changeWidgetView(ViewType type) {
+    setState(() {
+      _currentView = type;
+    });
+  }
 
-    return Scaffold(
-      backgroundColor: AppColor.mainBackground,
-      body: Row(
-        children: [
-          _buildSShListArea(provider),
-          const VerticalDivider(
-              thickness: 1, width: 1, color: AppColor.divider),
-          _buildTerminalTabs(provider),
-        ],
-      ),
+  Widget _buildViewTypeIcons() {
+    return Row(
+      children: [
+        ButtonIcon(
+          icon: Icons.format_list_bulleted_outlined,
+          iconSize: 22,
+          iconColor: _currentView == ViewType.listView
+              ? Colors.white
+              : AppColor.disable,
+          callback: () => _changeWidgetView(ViewType.listView),
+        ),
+        ButtonIcon(
+          icon: Icons.folder_open,
+          iconSize: 22,
+          iconColor: _currentView == ViewType.folderView
+              ? Colors.white
+              : AppColor.disable,
+          callback: () => _changeWidgetView(ViewType.folderView),
+        ),
+      ],
     );
   }
 
-  Widget _buildSShListArea(SSHListProvider provider) {
+  Widget _buildListView(SSHListProvider provider) {
     return Expanded(
-      flex: 2,
       child: Container(
         color: AppColor.mainBackground,
         child: provider.sshList.isEmpty
@@ -178,6 +198,53 @@ class _SSHListPageState extends State<SSHListPage>
     );
   }
 
+  Widget _buildFolderView(SSHListProvider provider) {
+    return Expanded(
+      child: Container(
+        color: AppColor.mainBackground,
+        child: provider.folderList.isEmpty
+            ? const Center(
+                child: Text(
+                  'No folders available',
+                  style: TextStyle(color: Colors.white),
+                ),
+              )
+            : ListView.builder(
+                itemCount: provider.folderList.length,
+                itemBuilder: (context, index) {
+                  final folderName = provider.folderList[index];
+                  return ListTile(
+                    title: Text(
+                      folderName,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    onTap: () async {
+                      final client = provider.clients.first;
+                      final newPath =
+                          '${provider.currentPath}/$folderName'.replaceAll('//', '/');
+                      await provider.changeDirectory(client!, newPath);
+                    },
+                  );
+                },
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSShListArea(SSHListProvider provider) {
+    return Expanded(
+      flex: 2,
+      child: Column(
+        children: [
+          _buildViewTypeIcons(),
+          (_currentView == ViewType.listView)
+              ? _buildListView(provider)
+              : _buildFolderView(provider),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTerminalTabs(SSHListProvider provider) {
     return Expanded(
       flex: 8,
@@ -235,6 +302,23 @@ class _SSHListPageState extends State<SSHListPage>
                     ),
                   ),
           ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<SSHListProvider>(context);
+
+    return Scaffold(
+      backgroundColor: AppColor.mainBackground,
+      body: Row(
+        children: [
+          _buildSShListArea(provider),
+          const VerticalDivider(
+              thickness: 1, width: 1, color: AppColor.divider),
+          _buildTerminalTabs(provider),
         ],
       ),
     );

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dartssh2/dartssh2.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -13,7 +15,11 @@ class SSHListProvider extends ChangeNotifier {
   final List<SSHClient?> clients = [];
   final List<String> tabTitles = [];
 
+    String currentPath = '/';
+  List<String> folderList = [];
+
   int? hoveredIndex;
+  
 
   SSHListProvider() {
     loadSSHList();
@@ -93,6 +99,50 @@ class SSHListProvider extends ChangeNotifier {
     } catch (e) {
       print('Connection failed for ${ssh.hostName}:${ssh.port}: $e');
       return false;
+    }
+  }
+
+    void updateCurrentPath(String path) {
+    currentPath = path;
+    notifyListeners();
+  }
+
+  void updateFolderList(List<String> folders) {
+    folderList = folders;
+    notifyListeners();
+  }
+
+  Future<String> getCurrentPath(SSHClient client) async {
+    try {
+      final result = await client.run('pwd');
+      return utf8.decode(result).trim();
+    } catch (e) {
+      debugPrint('Error fetching current path: $e');
+      return '/';
+    }
+  }
+
+  Future<List<String>> getFolderList(SSHClient client, String path) async {
+    try {
+      final result = await client.run('ls -1 $path');
+      final output = utf8.decode(result).trim();
+      return output.split('\n');
+    } catch (e) {
+      debugPrint('Error fetching folder list: $e');
+      return [];
+    }
+  }
+
+  Future<void> changeDirectory(SSHClient client, String newPath) async {
+    try {
+      await client.run('cd $newPath');
+      final updatedPath = await getCurrentPath(client);
+      updateCurrentPath(updatedPath);
+
+      final folderList = await getFolderList(client, updatedPath);
+      updateFolderList(folderList);
+    } catch (e) {
+      debugPrint('Error changing directory: $e');
     }
   }
 }
