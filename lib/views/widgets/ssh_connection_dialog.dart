@@ -13,6 +13,7 @@ class SSHConnectionDialog extends StatefulWidget {
 }
 
 class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
+  final TextEditingController _sshNameController = TextEditingController();
   final TextEditingController _hostNameController = TextEditingController();
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -22,6 +23,7 @@ class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
 
   @override
   void dispose() {
+    _sshNameController.dispose();
     _hostNameController.dispose();
     _userNameController.dispose();
     _passwordController.dispose();
@@ -30,6 +32,7 @@ class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
   }
 
   Future<void> _connectSSH() async {
+    final String sshName = _sshNameController.text;
     final String hostName = _hostNameController.text;
     final String userName = _userNameController.text;
     final String password = _passwordController.text;
@@ -57,6 +60,7 @@ class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
 
       // 데이터베이스에 저장
       final newSSHData = {
+        'sshName': sshName,
         'hostName': hostName,
         'userName': userName,
         'password': password,
@@ -69,10 +73,13 @@ class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
       final provider = Provider.of<SSHListProvider>(context, listen: false);
       provider.addSSH(SSHListData(
         id: DateTime.now().millisecondsSinceEpoch,
+        sshName: sshName,
         hostName: hostName,
         userName: userName,
         password: password,
         port: port,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       ));
 
       Future.delayed(const Duration(milliseconds: 100), () {
@@ -103,6 +110,10 @@ class _SSHConnectionDialogState extends State<SSHConnectionDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            TextField(
+              controller: _sshNameController,
+              decoration: const InputDecoration(labelText: 'SSH Name'),
+            ),
             TextField(
               controller: _hostNameController,
               decoration: const InputDecoration(labelText: 'Host Name'),

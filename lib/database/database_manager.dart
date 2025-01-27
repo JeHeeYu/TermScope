@@ -25,10 +25,13 @@ class DatabaseManager {
         await db.execute('''
           CREATE TABLE ssh_list (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sshName TEXT NOT NULL,
             hostName TEXT NOT NULL,
             userName TEXT NOT NULL,
             password TEXT NOT NULL,
-            port INTEGER NOT NULL
+            port INTEGER NOT NULL,
+            createdAt TEXT NOT NULL,
+            updatedAt TEXT NOT NULL 
           )
         ''');
       },
@@ -56,6 +59,10 @@ class DatabaseManager {
       print('Duplicate data detected: $sshInfo');
       return;
     }
+
+    final currentTime = DateTime.now().toIso8601String();
+    sshInfo['createdAt'] = currentTime;
+    sshInfo['updatedAt'] = currentTime;
 
     await _database!.insert('ssh_list', sshInfo);
     print('Inserted data: $sshInfo');

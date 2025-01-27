@@ -45,15 +45,13 @@ class _SSHListPageState extends State<SSHListPage>
 
     provider.addTerminal(
       terminal,
-      '${sshData.hostName}:${sshData.port}',
+      sshData.sshName,
       null,
     );
 
     _updateTabController();
 
     try {
-      terminal.write('Connecting to ${sshData.hostName}:${sshData.port}...\n');
-
       final client = SSHClient(
         await SSHSocket.connect(sshData.hostName, sshData.port),
         username: sshData.userName,
@@ -61,8 +59,6 @@ class _SSHListPageState extends State<SSHListPage>
       );
 
       provider.clients[provider.terminals.indexOf(terminal)] = client;
-
-      terminal.write('Connected to ${sshData.hostName}:${sshData.port}\n');
 
       final shell = await client.shell();
 
@@ -151,7 +147,7 @@ class _SSHListPageState extends State<SSHListPage>
                           children: [
                             Expanded(
                               child: Text(
-                                '${sshData.hostName}:${sshData.port}',
+                                sshData.sshName,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 14.0,
